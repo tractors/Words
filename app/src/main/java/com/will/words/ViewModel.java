@@ -1,6 +1,7 @@
 package com.will.words;
 
 import android.app.Application;
+import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -21,6 +22,9 @@ public class ViewModel extends AndroidViewModel {
         return repository.getAllWordsLive();
     }
 
+    public LiveData<List<Word>> findWordsWithPatten(String patten){
+        return repository.findWordsWithPatten(patten);
+    }
 
     public boolean isUpdate() {
         return isUpdate;

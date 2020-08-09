@@ -21,6 +21,10 @@ public class WordRepository {
         return allWordsLive;
     }
 
+    public LiveData<List<Word>> findWordsWithPatten(String patten){
+        return wordDao.findWordsWithPatten("%" + patten + "%");
+    }
+
     @SuppressWarnings("deprecation")
     static class InsertAsyncTask extends AsyncTask<Word,Void,Void> {
 
