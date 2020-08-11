@@ -15,6 +15,7 @@ import androidx.lifecycle.SavedStateViewModelFactory;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -77,19 +78,36 @@ public class WordsFragment extends Fragment {
         } else {
             recyclerView.setAdapter(myAdapter1);
         }
+
+        recyclerView.setItemAnimator(new DefaultItemAnimator(){
+            @Override
+            public void onAnimationFinished(@NonNull RecyclerView.ViewHolder viewHolder) {
+                super.onAnimationFinished(viewHolder);
+                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                if (layoutManager != null){
+                    int firstPosition = layoutManager.findFirstVisibleItemPosition();
+                    int lastPosition = layoutManager.findLastVisibleItemPosition();
+
+                    for (int i = firstPosition; i <= lastPosition; i++){
+                        MyAdapter.MyViewHolder holder = (MyAdapter.MyViewHolder) recyclerView.findViewHolderForAdapterPosition(i);
+                        if (holder != null) {
+                            holder.textViewNumber.setText(String.valueOf(i + 1));
+                        }
+                    }
+                }
+            }
+        });
         filteredWords = viewModel.getAllWordsLive();
-        filteredWords.observe(requireActivity(), new Observer<List<Word>>() {
+        filteredWords.observe(getViewLifecycleOwner(), new Observer<List<Word>>() {
             @Override
             public void onChanged(List<Word> words) {
 
                 int temp = myAdapter1.getItemCount();
-                myAdapter1.setAllWords(words);
-                myAdapter2.setAllWords(words);
-
 
                 if (temp != words.size()){
-                    myAdapter1.notifyDataSetChanged();
-                    myAdapter2.notifyDataSetChanged();
+                    recyclerView.smoothScrollBy(0,-200);
+                    myAdapter1.submitList(words);
+                    myAdapter2.submitList(words);
                 }
 //                if (!viewModel.isUpdate()){
 //                    myAdapter1.notifyDataSetChanged();
@@ -97,6 +115,7 @@ public class WordsFragment extends Fragment {
 //                } else {
 //                    viewModel.setUpdate(false);
 //                }
+
             }
         });
 
@@ -138,17 +157,16 @@ public class WordsFragment extends Fragment {
             @Override
             public boolean onQueryTextChange(String newText) {
                 String patten = newText.trim();
-                filteredWords.removeObservers(requireActivity());//移除之前的监听
+                filteredWords.removeObservers(getViewLifecycleOwner());//移除之前的监听
                 filteredWords = viewModel.findWordsWithPatten(patten);
-                filteredWords.observe(requireActivity(), new Observer<List<Word>>() {
+                filteredWords.observe(getViewLifecycleOwner(), new Observer<List<Word>>() {
                     @Override
                     public void onChanged(List<Word> words) {
                         int temp = myAdapter1.getItemCount();
-                        myAdapter1.setAllWords(words);
-                        myAdapter2.setAllWords(words);
+
                         if (temp != words.size()){
-                            myAdapter1.notifyDataSetChanged();
-                            myAdapter2.notifyDataSetChanged();
+                            myAdapter1.submitList(words);
+                            myAdapter2.submitList(words);
                         }
                     }
                 });

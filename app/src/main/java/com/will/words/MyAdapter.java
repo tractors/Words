@@ -10,24 +10,33 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder>{
+public class MyAdapter extends ListAdapter<Word, MyAdapter.MyViewHolder> {
 
-    private List<Word> allWords = new ArrayList<>();
     private ViewModel viewModel;
     boolean userCardView;
 
     public MyAdapter(boolean userCardView, ViewModel viewModel) {
+        super(new DiffUtil.ItemCallback<Word>() {
+            @Override
+            public boolean areItemsTheSame(@NonNull Word oldItem, @NonNull Word newItem) {
+                return oldItem.getId() == newItem.getId();
+            }
+
+            @Override
+            public boolean areContentsTheSame(@NonNull Word oldItem, @NonNull Word newItem) {
+                return (oldItem.getWord().equals(newItem.getWord())) && (oldItem.getChineseMeaning().equals(newItem.getChineseMeaning()))
+                        && (oldItem.isChineseInvisible() == newItem.isChineseInvisible());
+            }
+        });
         this.userCardView = userCardView;
         this.viewModel = viewModel;
-    }
-
-    public void setAllWords(List<Word> allWords) {
-        this.allWords = allWords;
     }
 
     @NonNull
@@ -36,10 +45,10 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder>{
 
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view;
-        if (userCardView){
-            view = inflater.inflate(R.layout.cell_card,parent,false);
+        if (userCardView) {
+            view = inflater.inflate(R.layout.cell_card, parent, false);
         } else {
-            view = inflater.inflate(R.layout.cell_normal,parent,false);
+            view = inflater.inflate(R.layout.cell_normal, parent, false);
         }
 
         final MyViewHolder holder = new MyViewHolder(view);
@@ -59,7 +68,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder>{
 
                 Word word = (Word) holder.itemView.getTag(R.id.word_for_view_holder);
 
-                if (isChecked){
+                if (isChecked) {
                     holder.textViewChinese.setVisibility(View.GONE);
                     word.setChineseInvisible(true);
                 } else {
@@ -75,13 +84,13 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder>{
 
     @Override
     public void onBindViewHolder(@NonNull final MyViewHolder holder, int position) {
-        final Word word = allWords.get(position);
-        holder.itemView.setTag(R.id.word_for_view_holder,word);
+        final Word word = getItem(position);
+        holder.itemView.setTag(R.id.word_for_view_holder, word);
         holder.textViewNumber.setText(String.valueOf(position + 1));
         holder.textViewEnglish.setText(word.getWord());
         holder.textViewChinese.setText(word.getChineseMeaning());
 //        holder.aSwitchChineseInvisible.setOnCheckedChangeListener(null);//这个很重要，其目的是为了，初始化数据的显示
-        if (word.isChineseInvisible()){
+        if (word.isChineseInvisible()) {
             holder.textViewChinese.setVisibility(View.GONE);
             holder.aSwitchChineseInvisible.setChecked(true);
         } else {
@@ -92,14 +101,16 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder>{
     }
 
     @Override
-    public int getItemCount() {
-        return allWords.size();
+    public void onViewAttachedToWindow(@NonNull MyViewHolder holder) {
+        super.onViewAttachedToWindow(holder);
+        holder.textViewNumber.setText(String.valueOf(holder.getAdapterPosition()+1));
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView textViewNumber,textViewEnglish,textViewChinese;
-        private Switch aSwitchChineseInvisible;
+        public TextView textViewNumber, textViewEnglish, textViewChinese;
+        public Switch aSwitchChineseInvisible;
+
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             textViewNumber = itemView.findViewById(R.id.textViewNumber);
