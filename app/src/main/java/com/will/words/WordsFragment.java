@@ -247,7 +247,7 @@ public class WordsFragment extends Fragment {
                     iconLeft = itemView.getLeft() + iconMargin;
                     iconRight = iconLeft + icon.getIntrinsicWidth();
                     icon.setBounds(iconLeft,iconTop,iconRight,iconBottom);
-                } else if (dY < 0){
+                } else if (dX < 0){
                     backRight = itemView.getRight();
                     backLeft = itemView.getRight() + (int) dX;
                     background.setBounds(backLeft,backTop,backRight,backBottom);
